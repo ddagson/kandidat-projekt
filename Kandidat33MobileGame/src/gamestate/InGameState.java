@@ -212,7 +212,9 @@ public class InGameState extends AbstractAppState {
     private void generatePlayer() {
 //Här kan man köra loadmodel och asset rocket etc. och ta in en node istället troligen 2013-02-14 Emil
 
-  Node player_geo = (Node)assetManager.loadModel("Models/rocket/rocket.mesh.xml");
+  //Node player_geo = (Node)assetManager.loadModel("Models/rocket/rocket.mesh.xml");
+  Node player_geo = (Node)assetManager.loadModel("Models/rocket/rocket.j3o");
+  //funkar att ladda in j3o till JME 
      player_geo.scale(5);
         DirectionalLight sun2 = new DirectionalLight();
         sun2.setDirection(new Vector3f (1,1.0f,-1.0f));
@@ -223,6 +225,7 @@ public class InGameState extends AbstractAppState {
         playerGeo.setMaterial(playerMaterial);
         playerNode = new Node("PlayerNode");
         playerNode.attachChild(playerGeo);
+        player_geo.setMaterial(playerMaterial); //den blir helt svart annars
   playerNode.attachChild(player_geo); //lagt till nu 
  inGameRootNode.addLight(sun2);
 
