@@ -16,6 +16,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -209,12 +210,23 @@ public class InGameState extends AbstractAppState {
     }
 
     private void generatePlayer() {
+//Här kan man köra loadmodel och asset rocket etc. och ta in en node istället troligen 2013-02-14 Emil
+
+  Node player_geo = (Node)assetManager.loadModel("Models/rocket/rocket.mesh.xml");
+     player_geo.scale(5);
+        DirectionalLight sun2 = new DirectionalLight();
+        sun2.setDirection(new Vector3f (1,1.0f,-1.0f));
+       
+
+
         Geometry playerGeo = new Geometry("PlayerModel", playerModel);
         playerGeo.setMaterial(playerMaterial);
         playerNode = new Node("PlayerNode");
         playerNode.attachChild(playerGeo);
+  playerNode.attachChild(player_geo); //lagt till nu 
+ inGameRootNode.addLight(sun2);
 
-        /**
+  /**
          * Create a CharacterControl object
          */
         CapsuleCollisionShape shape = new CapsuleCollisionShape(2f, 2f);
