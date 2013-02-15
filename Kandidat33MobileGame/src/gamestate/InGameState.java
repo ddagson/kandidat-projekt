@@ -22,12 +22,15 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.BloomFilter;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import com.jme3.texture.Texture;
 import java.util.LinkedList;
 import variables.P;
 
@@ -72,6 +75,13 @@ public class InGameState extends AbstractAppState {
         this.physics = new BulletAppState();
         this.stateManager.attach(physics);
         generateLevel();
+        
+        //Nedan kopierat från JME guide, verkar helt stänga ner grafiken på GS2
+        /*FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
+        BloomFilter bloom = new BloomFilter(BloomFilter.GlowMode.Objects);
+        fpp.addFilter(bloom);
+        viewPort.addProcessor(fpp);
+        */
     }
 
     @Override
@@ -167,8 +177,21 @@ public class InGameState extends AbstractAppState {
     private void generateMaterials() {
         platformMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         platformMaterial.setColor("Color", ColorRGBA.Blue);
-        playerMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        playerMaterial.setColor("Color", ColorRGBA.Red);
+        //playerMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        playerMaterial = new Material (assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        playerMaterial.setTexture("ColorMap", assetManager.loadTexture("Textures/brickwall/BrickWall.jpg"));
+        //2013-02-14 Funkar bra att ladda BrickWall till kuben, men inte på spöket. 
+        //Vad för textur kan vi lägga på spöket?
+        //Kolla igen på UV-mapping och se om där finns något trevligt. 
+        //Troligen är trianglarna för små.
+        
+       // playerMaterial.setColor("Color", ColorRGBA.Black);
+      // playerMaterial.getAdditionalRenderState().setWireframe(true);
+        //playerMaterial.setColor("Color", new ColorRGBA(0.1f,0.1f,0.1f,0.5f));
+      //   playerMaterial.setColor("GlowColor", ColorRGBA.Green);
+       // playerMaterial.setColor ("Color", ColorRGBA.White);
+        //playerMaterial.
+        //playerMaterial = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
     }
 
     private void generateModels() {
@@ -213,22 +236,27 @@ public class InGameState extends AbstractAppState {
 //Här kan man köra loadmodel och asset rocket etc. och ta in en node istället troligen 2013-02-14 Emil
 
   //Node player_geo = (Node)assetManager.loadModel("Models/rocket/rocket.mesh.xml");
-  Node player_geo = (Node)assetManager.loadModel("Models/rocket/rocket.j3o");
+  //Node player_geo = (Node)assetManager.loadModel("Models/rocket/rocket.j3o");
+  Node player_geo = (Node)assetManager.loadModel("Models/ghost1/ghost1.j3o");
   //funkar att ladda in j3o till JME 
-     player_geo.scale(5);
+     player_geo.scale(3);
+     player_geo.move(10, 5, 0);
+     player_geo.rotate(0,3.14f,0);
         DirectionalLight sun2 = new DirectionalLight();
         sun2.setDirection(new Vector3f (1,1.0f,-1.0f));
        
-
-
+        
         Geometry playerGeo = new Geometry("PlayerModel", playerModel);
         playerGeo.setMaterial(playerMaterial);
         playerNode = new Node("PlayerNode");
         playerNode.attachChild(playerGeo);
         player_geo.setMaterial(playerMaterial); //den blir helt svart annars
+       
   playerNode.attachChild(player_geo); //lagt till nu 
- inGameRootNode.addLight(sun2);
-
+  playerNode.addLight(sun2);
+ //inGameRootNode.addLight(sun2);
+        //playerNode.rotate(30f, 0.05f, 30f);
+        //playerNode.
   /**
          * Create a CharacterControl object
          */
