@@ -245,8 +245,9 @@ public class InGameState extends AbstractAppState {
   
   
         Node player_geo = (Node)assetManager.loadModel("Models/ghost3/ghost3.j3o");
-        playerMaterial.setTexture("DiffuseMap", assetManager.loadTexture("Models/ghost3/ghost3.png"));
+       // playerMaterial.setTexture("DiffuseMap", assetManager.loadTexture("Models/ghost3/ghost3.png"));
         //playerMaterial.setTexture("DiffuseMap", assetManager.loadTexture("Models/ghost3/ghost3.png"));
+        playerMaterial = assetManager.loadMaterial("Models/ghost3/ghost3.j3m");
         player_geo.setMaterial(playerMaterial); //den blir helt svart annars
         //funkar att ladda in j3o till JME 
      player_geo.scale(3);
