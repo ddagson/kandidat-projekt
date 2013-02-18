@@ -1,5 +1,9 @@
 package gamestate;
 
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
+import com.jme3.animation.AnimEventListener;
+import com.jme3.animation.LoopMode;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
@@ -9,6 +13,8 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
@@ -39,7 +45,7 @@ import variables.P;
  *
  * @author forssenm
  */
-public class InGameState extends AbstractAppState {
+public class InGameState extends AbstractAppState implements AnimEventListener {
 
     private SimpleApplication app;
     private Node inGameRootNode;
@@ -51,11 +57,16 @@ public class InGameState extends AbstractAppState {
     private LinkedList<Geometry> platforms;
     private Material platformMaterial;
     private Material playerMaterial;
+    private Material starMaterial;
     private Box playerModel;
     private Box playerDeathModel;
     private Node playerNode;
     private CharacterControl playerCharacter;
 
+    
+    //Animationer
+     private AnimChannel channel;
+    private AnimControl control;
     /**
      * This method initializes the the InGameState
      *
@@ -84,6 +95,19 @@ public class InGameState extends AbstractAppState {
         */
     }
 
+    
+  public void onAnimChange(AnimControl control, AnimChannel channel, String animName) {
+    // unused
+  }
+  
+  public void onAnimCycleDone(AnimControl control, AnimChannel channel, String animName) {
+    /*if (animName.equals("Walk")) {
+      channel.setAnim("stand", 0.50f);
+      channel.setLoopMode(LoopMode.DontLoop);
+      channel.setSpeed(1f);
+    }*/
+  }
+ 
     @Override
     public void cleanup() {
         super.cleanup();
@@ -104,6 +128,10 @@ public class InGameState extends AbstractAppState {
 
     @Override
     public void update(float tpf) {
+        Spatial s = playerNode.getChild(1);
+        
+        s.rotate(0,0.005f,0);
+        
         if(playerNode.getLocalTranslation().y < -1) {
             playerDeath();
         }
@@ -133,11 +161,35 @@ public class InGameState extends AbstractAppState {
         generateModels();
         generatePlatforms();
         generatePlayer();
+        generateEffect();
         initInputs();
         initCamera();
 
     }
 
+    private void generateEffect() {
+    
+    ParticleEmitter fire = 
+            new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
+    Material mat_red = new Material(assetManager, 
+            "Common/MatDefs/Misc/Particle.j3md");
+    mat_red.setTexture("Texture", assetManager.loadTexture(
+            "Effects/Explosion/flame.png"));
+    fire.setMaterial(mat_red);
+    fire.setImagesX(2); 
+    fire.setImagesY(2); // 2x2 texture animation
+    fire.setEndColor(  new ColorRGBA(1f, 0f, 0f, 1f));   // red
+    fire.setStartColor(new ColorRGBA(1f, 1f, 0f, 0.5f)); // yellow
+    fire.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 2, 0));
+    fire.setStartSize(1.5f);
+    fire.setEndSize(0.1f);
+    fire.setGravity(0, 0, 0);
+    fire.setLowLife(1f);
+    fire.setHighLife(3f);
+    fire.getParticleInfluencer().setVelocityVariation(0.3f);
+    fire.move(0, 5, 0);
+    playerNode.attachChild(fire);
+    }
     /**
      * Sets up the camera to follow the player.
      */
@@ -177,8 +229,6 @@ public class InGameState extends AbstractAppState {
     private void generateMaterials() {
         platformMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         platformMaterial.setColor("Color", ColorRGBA.Blue);
-        //playerMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-      //  playerMaterial = new Material (assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
       //  playerMaterial.setTexture("ColorMap", assetManager.loadTexture("Textures/brickwall/BrickWall.jpg"));
         //2013-02-14 Funkar bra att ladda BrickWall till kuben, men inte på spöket. 
         //Vad för textur kan vi lägga på spöket?
@@ -193,6 +243,7 @@ public class InGameState extends AbstractAppState {
         //playerMaterial.
         //med ljus och lighting
         playerMaterial = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        starMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
     // playerMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
     }
 
@@ -244,33 +295,64 @@ public class InGameState extends AbstractAppState {
         //Node player_geo = (Node)assetManager.loadModel("Models/ghost3/ghost3.mesh.xml");
   
   
-        Node player_geo = (Node)assetManager.loadModel("Models/ghost3/ghost3.j3o");
+        Node player_geo = (Node)assetManager.loadModel("Models/ghost6anim/ghost6animgroups.j3o");
+       
+       // 
        // playerMaterial.setTexture("DiffuseMap", assetManager.loadTexture("Models/ghost3/ghost3.png"));
         //playerMaterial.setTexture("DiffuseMap", assetManager.loadTexture("Models/ghost3/ghost3.png"));
-        playerMaterial = assetManager.loadMaterial("Models/ghost3/ghost3.j3m");
-        player_geo.setMaterial(playerMaterial); //den blir helt svart annars
+       // playerMaterial = assetManager.loadMaterial("Models/ghost6anim/ghost3.j3m");
+        //player_geo.setMaterial(playerMaterial); //den blir helt svart annars
         //funkar att ladda in j3o till JME 
+        //Node player_star = (Node)assetManager.loadModel("Models/star10/star10yellow.j3o");
+        Node player_star = (Node)assetManager.loadModel("Models/star10/star10yellow.j3o");
+       // player_star.setMaterial(starMaterial);
+      //  player_star.setMaterial(starMaterial);
+        //player_star.setMaterial (starMaterial);
+         //starMaterial.setColor("Diffuse", ColorRGBA.Cyan);// new ColorRGBA(0,1,1,0.5f));
+      
+        player_star.move(10,15,0);
+        player_star.scale (2);
      player_geo.scale(3);
-     player_geo.move(10, 5, 0);
+     player_geo.move(10, 3, 0);
      player_geo.rotate(0,3.14f,0);
-        DirectionalLight sun2 = new DirectionalLight();
-        sun2.setDirection(new Vector3f (1,1.0f,-1.0f));
+        DirectionalLight lightFromForward = new DirectionalLight();
+        lightFromForward.setDirection(new Vector3f (-1,0,0));  //rakt framifrån
         
-        DirectionalLight sun3 = new DirectionalLight();
-        sun3.setDirection(new Vector3f (-3, -3, 3));
+        DirectionalLight lightFromTop = new DirectionalLight();
+        lightFromTop.setDirection(new Vector3f (0, -1, 0)); //rakt uppifrån
+        
+        DirectionalLight lightFromCamera = new DirectionalLight();
+        lightFromCamera.setDirection(new Vector3f(0, 0, -1));   //från kamerans perspektiv
+        
+        DirectionalLight lightFromAll = new DirectionalLight();
+        lightFromAll.setDirection (new Vector3f(-1,-1,-1));
+        
+        DirectionalLight lightFromBelow = new DirectionalLight();
+        lightFromBelow.setDirection (new Vector3f (0, 1, 0)); //rakt nerifrån , se fötterna
         
         Geometry playerGeo = new Geometry("PlayerModel", playerModel);
         playerGeo.setMaterial(playerMaterial);
         playerNode = new Node("PlayerNode");
         playerNode.attachChild(playerGeo);
-        player_geo.setMaterial(playerMaterial); //den blir helt svart annars
+        playerNode.attachChild(player_star);
+        playerNode.addLight (lightFromAll);
+        playerNode.addLight (lightFromBelow);
+       // player_geo.setMaterial(playerMaterial); //den blir helt svart annars
        
   playerNode.attachChild(player_geo); //lagt till nu 
-  playerNode.addLight(sun2);
-  playerNode.addLight(sun3);
+  //playerNode.addLight(sun2);
+  //playerNode.addLight(sun3);
+  
  //inGameRootNode.addLight(sun2);
         //playerNode.rotate(30f, 0.05f, 30f);
         //playerNode.
+  control = player_geo.getChild("Cube").getControl(AnimControl.class);
+    control.addListener(this);
+    channel = control.createChannel();
+    //channel.setAnim("Action.001");
+    //channel.setAnim("stand");
+    channel.setAnim("Action.001");
+    channel.setLoopMode(LoopMode.Loop);
   /**
          * Create a CharacterControl object
          */
